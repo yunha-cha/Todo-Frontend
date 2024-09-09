@@ -1,20 +1,17 @@
 import './App.css';
-import axios from 'axios';
-import Todo from './Todo';
+import Todo from './component/todo/Todo';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import Login from './Login';
 
 
 function App() {
-
-
-
-  return (
-    <div className="App">
-      <header className="container">
-       
-      <Todo />
-
-      </header>
-    </div>
+  return(
+    <BrowserRouter>
+      <Routes>
+        <Route path='/' element={<Login />} />
+        <Route path='/todo' element={<Todo />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
