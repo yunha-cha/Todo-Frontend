@@ -21,7 +21,6 @@
   .todo-app{
     width: 100%;
     max-width: 1200px;
-    /* width: 1200px; */
     min-height: 700px;
     /* background:  whitesmoke; */
     background: #2f3444;
@@ -131,9 +130,15 @@
   }
   
   .today-btn{
-  
+    padding: 10px 25px;
+    border-radius: 5px;
     margin-bottom: 30px;
+    border: none;
+    cursor: pointer;
+    background: rgba(130, 158, 251, 0.46);
   }
+
+
   
   
   
@@ -144,7 +149,7 @@
     border-radius: 5px;
     /* background: #fff; */
     margin-left: 25px;
-    color: #9999;
+    color: #e7e7e7c0;
   }
   
   .selected-date{
@@ -153,13 +158,98 @@
   }
   
   .taskList{
-  
-  
-  
+    color: #e7e7e7c0;
+    margin-top: 30px;
+    font-size: 18px;
   }
   
   .task{
+    display: flex;
+    border-bottom: 1px solid #829efb75;
+    padding: 5px;
+    margin-bottom: 20px;
+  }
+
+  .task input{
+    background: transparent;
+    color: #e7e7e7c0;
+    border: none;
     font-size: 18px;
-    border-bottom: 1px solid ;
+    margin-left: 10px;
+
+  }
+
+  .faCircle{
+    color: rgb(130 158 251 / 70%);
   }
   
+  .faChevronLeft :hover{
+    cursor: pointer;
+    color: rgb(130 158 251 / 90%);
+  }
+
+  .faXmark :hover{
+    cursor: pointer;
+    color: rgb(130 158 251 / 90%);
+  }
+
+  .faPen :hover{
+    cursor: pointer;
+    color: rgb(130 158 251 / 90%);
+  }
+
+  .faChevronRight :hover{
+    cursor: pointer;
+    color: rgb(130 158 251 / 90%);
+  }
+
+  .faCirclePlus{
+    font-size: 3em;
+    color: rgba(122, 152, 249, 0.613);
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+  }
+
+  .faCirclePlus :hover{
+    cursor: pointer;
+    color: rgb(130 158 251 / 90%);
+  }
+
+
+  .AddTask{
+    font-size: 18px;
+  }
+
+  .AddTask input{
+
+    width: 300px;
+    height: 30px;
+    border: none;
+    background: transparent;
+    color: #e7e7e7c0;
+    font-size: 18px;
+    border-radius: 6px;
+    font-size: 18px;
+
+    border-bottom: 1px solid rgba(122, 152, 249, 0.613);;
+}
+
+  .AddTask button{
+
+      cursor: pointer;
+      /* width: 150px; */
+      padding: 5px 25px;
+      height: 30px;
+      border: none;
+      border-radius: 6px;
+      margin-bottom: 5px;
+      background: rgba(130, 158, 251, 0.46);
+      color: #ffffff;
+      font-size: 15px;
+
+
+  }

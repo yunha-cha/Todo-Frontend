@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import './Todo.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle } from "@fortawesome/free-regular-svg-icons";
-
+import { faChevronLeft, faChevronRight, faCirclePlus, faPen, faXmark } from "@fortawesome/free-solid-svg-icons";
 
 const Todo = () => {
 
@@ -14,11 +14,20 @@ const Todo = () => {
     const [selectedDay, setSelectedDay] = useState(new Date());
     const [taskLoad, setTaskLoad] = useState(false);
     const [taskOfMonth, setTaskOfMonth] = useState([]);
+    const [newTask, setnewTask] = useState({
+        taskCode:1,
+        taskContent: '',
+        taskStartDate: '',
+        taskEndtDate: '',
+        taskState: false,
+        taskUserName: '',
+        taskCategoryName: ''
+    })
+
     /* 캘린더 계산 */
     const [currentDate, setCurrentDate] = useState(new Date());
     const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const formatter = new Intl.DateTimeFormat('en-US', { month: 'long' });
-
 
 
 
@@ -31,7 +40,7 @@ const Todo = () => {
         });
         console.log("응답 : ", response?.data);
     
-        if(response.status !== 400){ // if는 좋은 내용
+        if(response.status !== 400){
             setCategoryNames(response?.data);
         }else{
     
@@ -42,8 +51,6 @@ const Todo = () => {
     
     const getTaskOfMonth = async() => {
 
-        setTaskLoad(false);
-
         let calendarDate = currentDate.toISOString().split('T')[0];
         const response = await axios.get(`http://localhost:7777/todo/tasks?calendarDate=${calendarDate}`, {
             headers: {
@@ -52,25 +59,114 @@ const Todo = () => {
         });
         console.log(response.data.data);
         setTaskOfMonth(response.data.data);
-        setTaskLoad(true);
-    }
-    const getTaskOfDay = async() =>{
-        setTaskLoad(false);
 
-        const selectedDate = selectedDay.toISOString().split('T')[0];
+    }
+
+
+    const getTaskOfDay = async() =>{
+
+        const selectedDate = selectedDay.toLocaleDateString('en-CA').split('T')[0];
         const res = await axios.get(`http://localhost:7777/todo/tasks/day?day=${selectedDate}`, {
             headers: {
                 Authorization: localStorage.getItem('token')
             },
         });
         if(res.status === 400){
-            alert('나중에 에러처리');
+            alert('page error');
         } else{
-            setTaskLoad(true);
-            setTaskList(res.data.data);
+            setTaskList(
+                res.data.data.map(item => ({ ...item, isEditing: false }))
+            );
         }
-  
+
     }
+
+
+
+    const onChangeRegist = (e) => {
+
+        const { name, value } = e.target;
+
+        console.log(name, value);
+         setnewTask(t => ({
+            ...t,
+            [name]: value
+        }));
+
+        console.log(newTask);
+    }
+
+
+    // 할일 등록
+    const handleRegist = () => {
+
+        const form = new FormData();
+        form.append('taskCode', newTask.taskCode);
+        form.append('taskContent', newTask.taskContent);
+        form.append('taskStartDate', newTask.taskStartDate);
+        form.append('taskEndDate', newTask.taskEndDate);
+        form.append('taskState', newTask.taskState);
+        form.append('taskUserName', newTask.taskUserName);
+        form.append('taskCategoryName', newTask.taskCategoryName);
+
+        const res = axios.post(`http://localhost:7777/todo/tasks`,form,{
+            headers:{
+                Authorization: localStorage.getItem('token')
+            }
+        })
+
+        alert("할 일이 추가되었습니다.");
+        setTaskLoad(true);
+        
+    }
+
+
+
+
+    // 할일 수정
+    const handleEdit = (taskCode) => {        
+        setTaskList(taskList.map(item => 
+            item.taskCode === taskCode ? { ...item, isEditing: !item.isEditing } : item
+        ));
+    }
+
+
+    const handleEdited = (taskContent,taskCode) => {
+        const obj = {
+            taskCode : taskCode,
+            taskContent:taskContent,
+        }
+
+        const form = new FormData();
+        form.append("taskCode",taskCode);
+        form.append("taskContent",taskContent);
+        const res = axios.post(`http://localhost:7777/todo/tasks`,form,{
+            headers:{
+                Authorization: localStorage.getItem('token')
+            }
+        })
+        console.log(res);
+
+    }
+
+    
+    
+    // 할일 삭제
+    const deleteTask = async(taskCode) => {
+        const userResponse = window.confirm("삭제하시겠습니까?");
+        if(userResponse){
+            const res = await axios.delete(`http://localhost:7777/todo/tasks/${taskCode}`, {headers: {
+                Authorization: localStorage.getItem('token')
+            }});
+
+            getTaskOfDay();
+            getTaskOfMonth();
+            alert(res.data);  
+        }
+    }
+
+
+
 
      const getDaysInMonth = (date) => {
          const year = date.getFullYear();
@@ -92,7 +188,7 @@ const Todo = () => {
          const days = getDaysInMonth(date);
          const firstDayOfMonth = getFirstDayOfMonth(date);
          const weeks = [];
-         let week = Array(firstDayOfMonth).fill(null); // Fill the first week with null values for days before the start of the month
+         let week = Array(firstDayOfMonth).fill(null);
  
          days.forEach(day => {
              if (week.length === 7) {
@@ -103,7 +199,6 @@ const Todo = () => {
          });
  
          if (week.length > 0) {
-             // Fill the last week with null values for days after the end of the month
              while (week.length < 7) {
                  week.push(null);
              }
@@ -120,6 +215,7 @@ const Todo = () => {
      useEffect(() => {
         getCategoryList();
         getTaskOfMonth();
+
     }, []);
 
     useEffect(()=>{
@@ -127,10 +223,17 @@ const Todo = () => {
         setCurrentCategory('전체');
     },[selectedDay])
 
+    useEffect(() => {
+        console.log("taskList: ", taskList);
+    },[taskList])
+
+
+
+
     const isEventDay = (date) => {
         if (date) {
             let day = date.getDate();
-            return taskOfMonth.some(it => day === it.taskStartDate[2]);
+            return taskOfMonth.some(it => day >= it.taskStartDate[2] && day <= it.taskEndDate[2]);
         } else {
             return false;       
         }
@@ -138,29 +241,22 @@ const Todo = () => {
     
     
 
-    return <div className="App">
-    <div className="container">
-
-    <div className="todo-app">
+    return <div className="todo-app">
 
     <div className="calendar-container">
 
         <div className="calendar">
 
             <div className="header">
-                <button onClick={() => {
+                <FontAwesomeIcon icon={faChevronLeft} className="faChevronLeft" onClick={() => {
                     setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() - 1)))
                     getTaskOfMonth();
-                    }}>
-                    {'<'}
-                </button>
+                    }}/>
                 <h2>{formatter.format(currentDate)} {currentDate.getFullYear()}</h2>
-                <button onClick={() => {
+                <FontAwesomeIcon icon={faChevronRight} className="faChevronRight" onClick={() => {
                     setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() + 1)))
                     getTaskOfMonth();
-                    }}>
-                    {'>'}
-                </button>
+                    }}/>
             </div>
 
             <div className="days-of-week">
@@ -170,9 +266,6 @@ const Todo = () => {
             </div>
 
             <div className="days">
-                {/* 그 날짜에 데이터가 있으면 있음이라고 띄워보기 */}
-                {/* day.getDate()가 가져온 오브젝트에 날짜에 포함되어있으면 있음 이라고 띄우면 됨 */}
-                {/* 가졍혼 오브젝트의 스타드데이트랑 일치하면 있음이라고 찍자. */}
                 {weeks.map((week, weekIndex) => (
                     <div key={weekIndex} className="week">
                         {week.map((day, dayIndex) => (
@@ -182,7 +275,7 @@ const Todo = () => {
                                 style={{backgroundColor : day && (day.getDate() === selectedDay.getDate())
                                     && (day.getMonth() === selectedDay.getMonth())
                                     && (day.getFullYear() === selectedDay.getFullYear())
-                                 ? "#4e5671d6" : "", color: isEventDay(day) ? 'red' : 'black'}}>
+                                 ? "#829efb75" : "", color: isEventDay(day) ? 'rgb(130, 158, 251)' : 'black'}}>
                                 {day ? day.getDate() : ''}
                             </div>
                         ))}
@@ -202,58 +295,82 @@ const Todo = () => {
 
     </div>
 
+
         {/* 오른쪽 UI
-        - header에 카테고리 추가/관리 메뉴, 카테고리 필터링 드롭다운
-        - 캘린더 날짜를 클릭하면 해당 할 일 리스트
-        - 카테고리 관리 누르면 카테고리 관리 페이지로 */}
-        
+        - header에 카테고리 필터링 드롭다운
+        - 캘린더 날짜를 클릭하면 해당 할 일 리스트 */}
+    
         <div className="task-container">
 
-            {/* 카테고리 설정으로 이동 */}
             <header style={{display: "flex", justifyContent:"space-between", marginBottom: "20px"}}>
                 <h1 className="selected-date">{selectedDay.getFullYear()}.{selectedDay.getMonth()+1}.{selectedDay.getDate()}</h1>
-                <select style={{background: "#4f5b6f", border: "none", borderRadius: "5px",}}>
-                    <option value={''}>카테고리 추가</option>
-                    <option value={''}>카테고리 관리</option>
-                </select>
             </header>
 
 
             {/* 할일 리스트 */}
-
             {taskLoad ? 
             <>
-                <div style={{display: "flex", justifyContent: "flex-end"}}>
-                    <select style={{background: "#4f5b6f", border: "none", borderRadius: "5px"}} onChange={(e) => {setCurrentCategory(e.target.value); console.log(currentCategory);}}>
-                        <option value="전체">전체</option>
-                        {categoryNames.map((category) => (
-                            <option value={category.categoryName} key={category.categoryCode}>
-                                {category.categoryName}
-                            </option>
-                        ))}
-                    </select>
-                </div>
 
                 <div className="taskList">
                 {
                     taskList.length === 0 ? 
-                        <></>
+                        <div style={{textAlign: "center", }}>할 일이 없습니다.</div>
                             : 
                         (currentCategory === "전체" ?
                             taskList.map((task, idx) => 
-                                <div className="task">
-                                    <FontAwesomeIcon icon={faCircle} size="sm" style={{color: "rgb(55, 73, 176)",}} />
-                                    <div>{task.taskContent}</div>
-                                    <div>카테고리 : {task.categoryName}</div>
+                                <div className="task" key={idx}>
+                                    <FontAwesomeIcon icon={faCircle} size="sm" className="faCircle" />
+                                    { task.isEditing ?
+                                    <>
+                                        <div style={{width:'100%' ,display: "flex", justifyContent:"space-between"}}>
+                                            <input type="text" value={task.taskContent}  onChange={(e) => setTaskList(u =>{
+                                                const update = [...u];
+                                                update[idx] = {...update[idx], taskContent: e.target.value};
+                                                return update;
+                                            })}/>
+                                            <FontAwesomeIcon icon={faChevronRight} fade className="faChevronRight" 
+                                                onClick={() => {handleEdit(task.taskCode); handleEdited(task.taskContent,task.taskCode);}}
+                                            />
+                                        </div>
+                                    </>
+                                    :<div style={{width:'100%' ,display: "flex", justifyContent:"space-between"}}>
+                                        <div style={{marginLeft: "10px"}}>{task.taskContent}</div>
+                                        <div>
+                                            {/* <FontAwesomeIcon icon={faPen} className="faPen" onClick={() => handleEdit(task.taskCode)} style={{color: "#829efb75",}}/>&nbsp;&nbsp;&nbsp; */}
+                                            <FontAwesomeIcon icon={faXmark} className="faXmark" onClick={() => deleteTask(task.taskCode)} style={{color: "#829efb75",}}/>
+                                        </div>
+                                    </div>
+                                    }
+                                    
                                 </div>
                             )
                             :
                             taskList.filter((task) => task.taskCategoryName === currentCategory).map((task, idx) => 
-                                    <div className="task">
-                                        <FontAwesomeIcon icon={faCircle} size="sm" style={{color: "rgb(55, 73, 176)",}} />
-                                        <div>{task.taskContent}</div>
-                                        <div>카테고리 : {task.categoryName}</div>
+                                <div className="task" key={idx}>
+                                    <FontAwesomeIcon icon={faCircle} size="sm" className="faCircle" />
+                                    { task.isEditing ?
+                                    <>
+                                        <div style={{width:'100%' ,display: "flex", justifyContent:"space-between"}}>
+                                            <input type="text" value={task.taskContent}  onChange={(e) => setTaskList(u =>{
+                                                const update = [...u];
+                                                update[idx] = {...update[idx], taskContent: e.target.value};
+                                                return update;
+                                            })}/>
+                                            <FontAwesomeIcon icon={faChevronRight} fade className="faChevronRight" 
+                                                onClick={() => {handleEdit(task.taskCode); handleEdited(task.taskContent,task.taskCode);}}
+                                            />
+                                        </div>
+                                    </>
+                                    :<div style={{width:'100%' ,display: "flex", justifyContent:"space-between"}}>
+                                        <div style={{marginLeft: "10px"}}>{task.taskContent}</div>
+                                        <div>
+                                            {/* <FontAwesomeIcon icon={faPen} className="faPen" onClick={() => handleEdit(task.taskCode)} style={{color: "#829efb75",}}/>&nbsp;&nbsp;&nbsp; */}
+                                            <FontAwesomeIcon icon={faXmark} className="faXmark" onClick={() => deleteTask(task.taskCode)} style={{color: "#829efb75",}}/>
+                                        </div>
                                     </div>
+                                    }
+                                    
+                                </div>
                             )
                         )
                 }
@@ -261,17 +378,25 @@ const Todo = () => {
             </> 
             : 
             <>
+                <div className="AddTask">
+                    <div>할 일 추가</div><br />
+                    <input type="text" name="taskContent" placeholder="내용" onChange={onChangeRegist}/><br /><br />
+                    <input type="date" name="taskStartDate" onChange={onChangeRegist}/><br /><br />
+                    <input type="date" name="taskEndDate" onChange={onChangeRegist}/><br /><br />
+                    <button onClick={handleRegist}>추가하기</button>
+                </div>
             </>}
-          
+
+
+            {/* 할 일 추가 버튼 */}
+            <div style={{display: "flex", justifyContent: "flex-end"}}>
+                <FontAwesomeIcon icon={faCirclePlus} className="faCirclePlus"  onClick={() => setTaskLoad(!taskLoad)} />
+            </div>
 
 
         </div>
 
     </div>
-    </div>
-    </div>
-
-
 
 }
 
