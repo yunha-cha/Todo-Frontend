@@ -1,4 +1,4 @@
-# Todo App
+## Todo App
 
 간편하게 일정을 관리할 수 있는 Todo 웹 서비스를 개발했습니다.
 깔끔한 UI로 할 일을 쉽게 관리할 수 있고, 캘린더를 통해 날짜에 따른 할 일을 한 눈에 볼 수 있도록 구현하였습니다.
@@ -11,8 +11,7 @@
 - 로그인/회원가입
 
 
-### 메뉴얼
----
+## 메뉴얼
 backend는 Spring Boot를 실행하고,
 frontend는 VS Code에서 terminal에 명령어 'npm start' 하여 실행할 수 있습니다.
 
@@ -36,7 +35,7 @@ frontend는 VS Code에서 terminal에 명령어 'npm start' 하여 실행할 수
 
 
 
-### 캘린더
+## 캘린더
 
 주력으로 사용한 부분은 `캘린더` 입니다.
 기본적인 CRUD는 빠르게 구현하도록 했고,
@@ -45,9 +44,9 @@ frontend는 VS Code에서 terminal에 명령어 'npm start' 하여 실행할 수
 캘린더에서 선택한 날짜를 가져와서 출력하고,
 또 이 날짜 데이터를 back으로 보내면서 JS와 JAVA의 Date 타입이 달라 변환이 필요하다는 것도 알게 되었습니다.
 
-### API 명세
+## API 명세
 
-1. getMyTasks
+**1. getMyTasks**
 URL: /todo/tasks
 Method: GET
 Description: 현재 년/월에 대한 할 일을 조회합니다.
@@ -76,42 +75,3 @@ URL: /category
 Method: GET
 Description: 공개된 카테고리 목록을 조회합니다. 자신이 설정한 카테고리와 다른 사용자와 공유된 카테고리가 포함됩니다.
 
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
