@@ -4,10 +4,11 @@ import './Todo.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle } from "@fortawesome/free-regular-svg-icons";
 import { faChevronLeft, faChevronRight, faCirclePlus, faPen, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from "react-router-dom";
 
 const Todo = () => {
 
-
+    const nav = useNavigate();
     const [categoryNames, setCategoryNames] = useState([]);
     const [taskList, setTaskList] = useState([]);
     const [currentCategory, setCurrentCategory] = useState("전체");
@@ -38,8 +39,9 @@ const Todo = () => {
                 Authorization: localStorage.getItem('token')
             }
         });
-        console.log("응답 : ", response?.data);
-    
+        if(response.status === 403){
+            nav('/');
+        }
         if(response.status !== 400){
             setCategoryNames(response?.data);
         }else{
@@ -57,7 +59,9 @@ const Todo = () => {
                 Authorization: localStorage.getItem('token')
             },
         });
-        console.log(response.data.data);
+        if(response.status === 403){
+            nav('/');
+        }
         setTaskOfMonth(response.data.data);
 
     }
@@ -71,6 +75,9 @@ const Todo = () => {
                 Authorization: localStorage.getItem('token')
             },
         });
+        if(res.status === 403){
+            nav('/');
+        }
         if(res.status === 400){
             alert('page error');
         } else{
@@ -86,19 +93,16 @@ const Todo = () => {
     const onChangeRegist = (e) => {
 
         const { name, value } = e.target;
-
-        console.log(name, value);
-         setnewTask(t => ({
+        setnewTask(t => ({
             ...t,
             [name]: value
         }));
 
-        console.log(newTask);
     }
 
 
     // 할일 등록
-    const handleRegist = () => {
+    const handleRegist = async() => {
 
         const form = new FormData();
         form.append('taskCode', newTask.taskCode);
@@ -106,18 +110,21 @@ const Todo = () => {
         form.append('taskStartDate', newTask.taskStartDate);
         form.append('taskEndDate', newTask.taskEndDate);
         form.append('taskState', newTask.taskState);
-        form.append('taskUserName', newTask.taskUserName);
-        form.append('taskCategoryName', newTask.taskCategoryName);
+        // form.append('taskUserName', newTask.taskUserName);
 
-        const res = axios.post(`http://localhost:7777/todo/tasks`,form,{
+        const res = await axios.post(`http://localhost:7777/todo/tasks`,form,{
             headers:{
                 Authorization: localStorage.getItem('token')
             }
         })
+        if(res.status === 403){
+            nav('/');
+        }
 
         alert("할 일이 추가되었습니다.");
-        setTaskLoad(true);
-        
+        setTaskLoad(false);
+        getTaskOfDay();
+
     }
 
 
@@ -145,7 +152,9 @@ const Todo = () => {
                 Authorization: localStorage.getItem('token')
             }
         })
-        console.log(res);
+        if(res.status === 403){
+            nav('/');
+        }
 
     }
 
@@ -158,6 +167,9 @@ const Todo = () => {
             const res = await axios.delete(`http://localhost:7777/todo/tasks/${taskCode}`, {headers: {
                 Authorization: localStorage.getItem('token')
             }});
+            if(res.status === 403){
+                nav('/');
+            }
 
             getTaskOfDay();
             getTaskOfMonth();
@@ -213,6 +225,9 @@ const Todo = () => {
 
 
      useEffect(() => {
+        if(!localStorage.getItem('token')){
+            nav('/');
+        }
         getCategoryList();
         getTaskOfMonth();
 
@@ -222,10 +237,6 @@ const Todo = () => {
         getTaskOfDay();
         setCurrentCategory('전체');
     },[selectedDay])
-
-    useEffect(() => {
-        console.log("taskList: ", taskList);
-    },[taskList])
 
 
 
@@ -308,7 +319,7 @@ const Todo = () => {
 
 
             {/* 할일 리스트 */}
-            {taskLoad ? 
+            {!taskLoad ? 
             <>
 
                 <div className="taskList">
@@ -336,7 +347,7 @@ const Todo = () => {
                                     :<div style={{width:'100%' ,display: "flex", justifyContent:"space-between"}}>
                                         <div style={{marginLeft: "10px"}}>{task.taskContent}</div>
                                         <div>
-                                            {/* <FontAwesomeIcon icon={faPen} className="faPen" onClick={() => handleEdit(task.taskCode)} style={{color: "#829efb75",}}/>&nbsp;&nbsp;&nbsp; */}
+                                            <FontAwesomeIcon icon={faPen} className="faPen" onClick={() => handleEdit(task.taskCode)} style={{color: "#829efb75",}}/>&nbsp;&nbsp;&nbsp;
                                             <FontAwesomeIcon icon={faXmark} className="faXmark" onClick={() => deleteTask(task.taskCode)} style={{color: "#829efb75",}}/>
                                         </div>
                                     </div>
