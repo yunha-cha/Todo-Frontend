@@ -10,9 +10,10 @@
 - 일별로 일정을 한눈에 볼 수 있는 캘린더 뷰
 - 로그인/회원가입
 
-### 메뉴얼
 
-backend는 Spring Boot 실행하고,
+### 메뉴얼
+---
+backend는 Spring Boot를 실행하고,
 frontend는 VS Code에서 terminal에 명령어 'npm start' 하여 실행할 수 있습니다.
 
 - 웹사이트를 처음 들어가면 로그인 페이지가 나옵니다.
