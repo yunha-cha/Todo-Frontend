@@ -38,10 +38,14 @@ frontend는 VS Code에서 terminal에 명령어 'npm start' 하여 실행할 수
 ## 캘린더
 
 주력으로 사용한 부분은 `캘린더` 입니다.
-기본적인 CRUD는 빠르게 구현하도록 했고,
-처음 만들어보는 캘린더 뷰를 구현하는 데 시간이 많이 걸렸습니다.
-캘린더 UI를 만드는 것과 날짜 로직을 공부했고,
-캘린더에서 선택한 날짜를 가져와서 출력하고,
+기본적인 CRUD는 빠르게 구현하도록 했고,  
+
+처음 만들어보는 캘린더 뷰를 구현하는 데 시간이 많이 걸렸습니다.  
+
+캘린더 UI를 만드는 것과 날짜 로직을 공부했고,  
+
+캘린더에서 선택한 날짜를 가져와서 출력하고,  
+
 또 이 날짜 데이터를 back으로 보내면서 JS와 JAVA의 Date 타입이 달라 변환이 필요하다는 것도 알게 되었습니다.
 
 ## API 명세
@@ -56,26 +60,44 @@ Description: 현재 년/월에 대한 할 일을 조회합니다.
 
 
 
-2. getTasks of the Day
-URL: /todo/tasks/day
-Method: GET
-Description: 특정 날짜(day)의 모든 할 일을 조회합니다.
+**2. getTasks of the Day**  
 
-3. createTask
-URL: /todo/tasks
-Method: POST
-Description: 새로운 할 일을 등록합니다.
+URL: /todo/tasks/day  
+
+Method: GET  
+
+Description: 특정 날짜(day)의 모든 할 일을 조회합니다.  
 
 
-4. removeTask
-URL: /todo/tasks/{taskCode}
-Method: DELETE
-Description: 특정 할 일을 삭제합니다.
-Path Variables:
-taskCode (Long): 삭제할 할 일의 코드
+**3. createTask**  
 
-5. getPublicCategories
-URL: /category
-Method: GET
-Description: 공개된 카테고리 목록을 조회합니다. 자신이 설정한 카테고리와 다른 사용자와 공유된 카테고리가 포함됩니다.
+URL: /todo/tasks  
+
+Method: POST  
+
+Description: 새로운 할 일을 등록합니다.  
+
+
+
+**4. removeTask**  
+
+URL: /todo/tasks/{taskCode}  
+
+Method: DELETE  
+
+Description: 특정 할 일을 삭제합니다.  
+
+Path Variables:  
+
+taskCode (Long): 삭제할 할 일의 코드  
+
+
+**5. getPublicCategories**  
+
+URL: /category  
+
+Method: GET  
+
+Description: 공개된 카테고리 목록을 조회합니다. 자신이 설정한 카테고리와 다른 사용자와 공유된 카테고리가 포함됩니다.  
+
 
