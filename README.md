@@ -46,10 +46,14 @@ frontend는 VS Code에서 terminal에 명령어 'npm start' 하여 실행할 수
 
 ## API 명세
 
-**1. getMyTasks**
-URL: /todo/tasks
-Method: GET
-Description: 현재 년/월에 대한 할 일을 조회합니다.
+**1. getMyTasks**  
+
+URL: /todo/tasks  
+
+Method: GET  
+
+Description: 현재 년/월에 대한 할 일을 조회합니다.  
+
 
 
 2. getTasks of the Day
