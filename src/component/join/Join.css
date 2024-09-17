@@ -1,0 +1,12 @@
+.faBackword {
+    display: flex;
+    align-self: baseline;
+    align-items: center;
+    cursor: pointer;
+}
+.back-button{
+    margin-left: 8px;
+}
+.back-button:hover{
+    font-weight: 550;
+}

@@ -2,7 +2,7 @@ import './App.css';
 import Todo from './component/todo/Todo';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
-import Join from './Join';
+import Join from './component/join/Join';
 import Login from './component/login/Login';
 
 

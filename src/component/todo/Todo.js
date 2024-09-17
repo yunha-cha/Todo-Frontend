@@ -2,9 +2,9 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import './Todo.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircle } from "@fortawesome/free-regular-svg-icons";
-import { faChevronLeft, faChevronRight, faCirclePlus, faPen, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faChevronLeft, faChevronRight, faCirclePlus } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
+import TaskList from "./TaskList";
 
 const Todo = () => {
 
@@ -75,6 +75,7 @@ const Todo = () => {
                 Authorization: localStorage.getItem('token')
             },
         });
+        console.log(res.data);
         if(res.status === 403){
             nav('/');
         }
@@ -315,6 +316,16 @@ const Todo = () => {
 
             <header style={{display: "flex", justifyContent:"space-between", marginBottom: "20px"}}>
                 <h1 className="selected-date">{selectedDay.getFullYear()}.{selectedDay.getMonth()+1}.{selectedDay.getDate()}</h1>
+                                <div style={{display: "flex", justifyContent: "flex-end"}}>
+                    <select style={{background: "#4f5b6f", border: "none", borderRadius: "5px"}} onChange={(e) => {setCurrentCategory(e.target.value)}}>
+                        <option value="전체">전체</option>
+                        {categoryNames.map((category) => (
+                            <option value={category.categoryName} key={category.categoryCode}>
+                                {category.categoryName}
+                            </option>
+                        ))}
+                    </select>
+                </div>
             </header>
 
 
@@ -329,59 +340,12 @@ const Todo = () => {
                             : 
                         (currentCategory === "전체" ?
                             taskList.map((task, idx) => 
-                                <div className="task" key={idx}>
-                                    <FontAwesomeIcon icon={faCircle} size="sm" className="faCircle" />
-                                    { task.isEditing ?
-                                    <>
-                                        <div style={{width:'100%' ,display: "flex", justifyContent:"space-between"}}>
-                                            <input type="text" value={task.taskContent}  onChange={(e) => setTaskList(u =>{
-                                                const update = [...u];
-                                                update[idx] = {...update[idx], taskContent: e.target.value};
-                                                return update;
-                                            })}/>
-                                            <FontAwesomeIcon icon={faChevronRight} fade className="faChevronRight" 
-                                                onClick={() => {handleEdit(task.taskCode); handleEdited(task.taskContent,task.taskCode);}}
-                                            />
-                                        </div>
-                                    </>
-                                    :<div style={{width:'100%' ,display: "flex", justifyContent:"space-between"}}>
-                                        <div style={{marginLeft: "10px"}}>{task.taskContent}</div>
-                                        <div>
-                                            <FontAwesomeIcon icon={faPen} className="faPen" onClick={() => handleEdit(task.taskCode)} style={{color: "#829efb75",}}/>&nbsp;&nbsp;&nbsp;
-                                            <FontAwesomeIcon icon={faXmark} className="faXmark" onClick={() => deleteTask(task.taskCode)} style={{color: "#829efb75",}}/>
-                                        </div>
-                                    </div>
-                                    }
-                                    
-                                </div>
+                               <TaskList idx={idx} task={task} handleEdit={handleEdit} handleEdited={handleEdited} deleteTask={deleteTask} setCategoryNames={setCategoryNames} setTaskList={setTaskList}/>
                             )
                             :
                             taskList.filter((task) => task.taskCategoryName === currentCategory).map((task, idx) => 
-                                <div className="task" key={idx}>
-                                    <FontAwesomeIcon icon={faCircle} size="sm" className="faCircle" />
-                                    { task.isEditing ?
-                                    <>
-                                        <div style={{width:'100%' ,display: "flex", justifyContent:"space-between"}}>
-                                            <input type="text" value={task.taskContent}  onChange={(e) => setTaskList(u =>{
-                                                const update = [...u];
-                                                update[idx] = {...update[idx], taskContent: e.target.value};
-                                                return update;
-                                            })}/>
-                                            <FontAwesomeIcon icon={faChevronRight} fade className="faChevronRight" 
-                                                onClick={() => {handleEdit(task.taskCode); handleEdited(task.taskContent,task.taskCode);}}
-                                            />
-                                        </div>
-                                    </>
-                                    :<div style={{width:'100%' ,display: "flex", justifyContent:"space-between"}}>
-                                        <div style={{marginLeft: "10px"}}>{task.taskContent}</div>
-                                        <div>
-                                            {/* <FontAwesomeIcon icon={faPen} className="faPen" onClick={() => handleEdit(task.taskCode)} style={{color: "#829efb75",}}/>&nbsp;&nbsp;&nbsp; */}
-                                            <FontAwesomeIcon icon={faXmark} className="faXmark" onClick={() => deleteTask(task.taskCode)} style={{color: "#829efb75",}}/>
-                                        </div>
-                                    </div>
-                                    }
-                                    
-                                </div>
+                                <TaskList idx={idx} task={task} handleEdit={handleEdit} handleEdited={handleEdited} deleteTask={deleteTask} setCategoryNames={setCategoryNames} setTaskList={setTaskList}/>
+
                             )
                         )
                 }
