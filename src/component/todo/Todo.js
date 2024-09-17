@@ -5,6 +5,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronLeft, faChevronRight, faCirclePlus } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import TaskList from "./TaskList";
+import { toHaveErrorMessage } from "@testing-library/jest-dom/dist/matchers";
+import api from "../../axiosHandler";
 
 const Todo = () => {
 
@@ -52,41 +54,15 @@ const Todo = () => {
 
     
     const getTaskOfMonth = async() => {
-
         let calendarDate = currentDate.toISOString().split('T')[0];
-        const response = await axios.get(`http://localhost:7777/todo/tasks?calendarDate=${calendarDate}`, {
-            headers: {
-                Authorization: localStorage.getItem('token')
-            },
-        });
-        if(response.status === 403){
-            nav('/');
-        }
-        setTaskOfMonth(response.data.data);
-
+        const res = await api.get(`/todo/tasks?calendarDate=${calendarDate}`);
+        setTaskOfMonth(res.data);
     }
 
-
     const getTaskOfDay = async() =>{
-
         const selectedDate = selectedDay.toLocaleDateString('en-CA').split('T')[0];
-        const res = await axios.get(`http://localhost:7777/todo/tasks/day?day=${selectedDate}`, {
-            headers: {
-                Authorization: localStorage.getItem('token')
-            },
-        });
-        console.log(res.data);
-        if(res.status === 403){
-            nav('/');
-        }
-        if(res.status === 400){
-            alert('page error');
-        } else{
-            setTaskList(
-                res.data.data.map(item => ({ ...item, isEditing: false }))
-            );
-        }
-
+        const res = await api.get(`/todo/tasks/day?day=${selectedDate}`);
+        setTaskList(res.data.map(item => ({ ...item, isEditing: false })));
     }
 
 
