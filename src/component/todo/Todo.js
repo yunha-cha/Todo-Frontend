@@ -5,7 +5,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronLeft, faChevronRight, faCirclePlus } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import TaskList from "./TaskList";
-import { toHaveErrorMessage } from "@testing-library/jest-dom/dist/matchers";
 import api from "../../axiosHandler";
 
 const Todo = () => {
@@ -35,21 +34,8 @@ const Todo = () => {
 
 
     const getCategoryList = async() => {
-
-        const response = await axios.get("http://localhost:7777/category", {
-            headers: {
-                Authorization: localStorage.getItem('token')
-            }
-        });
-        if(response.status === 403){
-            nav('/');
-        }
-        if(response.status !== 400){
-            setCategoryNames(response?.data);
-        }else{
-    
-          alert(response.data);
-        }
+        const res = await api.get("http://localhost:7777/category");
+        setCategoryNames(res?.data);
     }
 
     
@@ -66,15 +52,12 @@ const Todo = () => {
     }
 
 
-
     const onChangeRegist = (e) => {
-
         const { name, value } = e.target;
         setnewTask(t => ({
             ...t,
             [name]: value
         }));
-
     }
 
 
@@ -89,22 +72,12 @@ const Todo = () => {
         form.append('taskState', newTask.taskState);
         // form.append('taskUserName', newTask.taskUserName);
 
-        const res = await axios.post(`http://localhost:7777/todo/tasks`,form,{
-            headers:{
-                Authorization: localStorage.getItem('token')
-            }
-        })
-        if(res.status === 403){
-            nav('/');
-        }
-
+        await api.post(`http://localhost:7777/todo/tasks`,form);  //  등록      
         alert("할 일이 추가되었습니다.");
         setTaskLoad(false);
         getTaskOfDay();
 
     }
-
-
 
 
     // 할일 수정
@@ -124,37 +97,21 @@ const Todo = () => {
         const form = new FormData();
         form.append("taskCode",taskCode);
         form.append("taskContent",taskContent);
-        const res = axios.post(`http://localhost:7777/todo/tasks`,form,{
-            headers:{
-                Authorization: localStorage.getItem('token')
-            }
-        })
-        if(res.status === 403){
-            nav('/');
-        }
-
+        api.post(`http://localhost:7777/todo/tasks`,form);
     }
 
     
     
     // 할일 삭제
     const deleteTask = async(taskCode) => {
-        const userResponse = window.confirm("삭제하시겠습니까?");
-        if(userResponse){
-            const res = await axios.delete(`http://localhost:7777/todo/tasks/${taskCode}`, {headers: {
-                Authorization: localStorage.getItem('token')
-            }});
-            if(res.status === 403){
-                nav('/');
-            }
-
+        const userRes = window.confirm("삭제하시겠습니까?");
+        if(userRes){
+            const res = await api.delete(`http://localhost:7777/todo/tasks/${taskCode}`);
             getTaskOfDay();
             getTaskOfMonth();
-            alert(res.data);  
+            alert(res.data);
         }
     }
-
-
 
 
      const getDaysInMonth = (date) => {
@@ -216,8 +173,6 @@ const Todo = () => {
     },[selectedDay])
 
 
-
-
     const isEventDay = (date) => {
         if (date) {
             let day = date.getDate();
@@ -227,12 +182,9 @@ const Todo = () => {
         }
     }
     
-    
 
     return <div className="todo-app">
-
     <div className="calendar-container">
-
         <div className="calendar">
 
             <div className="header">
@@ -344,9 +296,7 @@ const Todo = () => {
                 <FontAwesomeIcon icon={faCirclePlus} className="faCirclePlus"  onClick={() => setTaskLoad(!taskLoad)} />
             </div>
 
-
         </div>
-
     </div>
 
 }

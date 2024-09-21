@@ -5,18 +5,22 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(
-    (config) =>{
+    (config) => {
         config.headers.Authorization = localStorage.getItem('token');
         return config;
     },
+    (err) => {
+        return Promise.reject(err);
+    }
 );
 
 api.interceptors.response.use(
     (res) => {
-        // console.log(res);
+        console.log("intercepter response : ",res);
         return res;
     },
     (err) =>{
+
         if(err.status === 403){
             alert('로그인이 만료되었습니다.');
             window.location.href = 'http://localhost:3000/';
