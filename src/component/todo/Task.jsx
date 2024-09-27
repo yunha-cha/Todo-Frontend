@@ -4,7 +4,7 @@ import { faChevronRight, faPen, faXmark } from "@fortawesome/free-solid-svg-icon
 
 
 
-const TaskList = ({task, idx, handleEdit, handleEdited, deleteTask, setTaskList}) => {
+const Task = ({task, idx, handleEdit, handleEdited, deleteTask, setTaskList}) => {
 
 
 
@@ -35,4 +35,4 @@ const TaskList = ({task, idx, handleEdit, handleEdited, deleteTask, setTaskList}
 </div>
 }
 
-export default TaskList;
+export default Task;

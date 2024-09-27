@@ -19,6 +19,7 @@ const Login = () => {
         try{
             const response = await axios.post('http://localhost:7777/login', formData);
             localStorage.setItem('token', response.headers.get("Authorization"));
+            alert(id, "님 환영합니다!");
             navigate('/todo');
         }catch(err){
             alert("로그인에 실패하였습니다. \n다시 시도해주시기 바랍니다.", err);

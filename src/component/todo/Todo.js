@@ -1,30 +1,61 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import './Todo.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronLeft, faChevronRight, faCirclePlus } from "@fortawesome/free-solid-svg-icons";
+import { faChevronLeft, faChevronRight, faCirclePlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
-import TaskList from "./TaskList";
 import api from "../../axiosHandler";
+import AddCategory from "./AddCategory";
+import Task from "./Task";
+import AddTask from "./AddTask";
 
 const Todo = () => {
 
     const nav = useNavigate();
-    const [categoryNames, setCategoryNames] = useState([]);
+    const [isOpenMenu, SetisOpenMenu] = useState(false);
+    const [page, setPage] = useState(1);
+    const [categoryList, setCategoryList] = useState([]);
     const [taskList, setTaskList] = useState([]);
-    const [currentCategory, setCurrentCategory] = useState("전체");
+    const [currentCategory, setCurrentCategory] = useState(0);
     const [selectedDay, setSelectedDay] = useState(new Date());
-    const [taskLoad, setTaskLoad] = useState(false);
+    const [menu, setMenu] = useState("할 일 보기");
     const [taskOfMonth, setTaskOfMonth] = useState([]);
-    const [newTask, setnewTask] = useState({
-        taskCode:1,
+    const [newTask, setNewTask] = useState({
+        taskCode: 1,
         taskContent: '',
         taskStartDate: '',
-        taskEndtDate: '',
+        taskEndDate: '',
         taskState: false,
         taskUserName: '',
-        taskCategoryName: ''
-    })
+        taskCategoryCode: 0,
+    });
+
+    const [newCategory, setNewCategory] = useState({
+        categoryName: '',
+        categoryIsPrivate: false,
+
+    });
+
+
+    const boxRef = useRef(null);
+    const [lastScrollTop, setLastScrollTop] = useState(0);
+
+    const handleScroll = () => {
+        const box = boxRef.current;
+
+        const currentScrollTop = box.scrollTop;
+
+        if(currentScrollTop > lastScrollTop){
+            const isAtBottom = Math.abs(box.scrollHeight - box.scrollTop - box.clientHeight) < 1;
+            if(isAtBottom){
+                console.log('sss');
+                getTaskOfDay();
+            }
+        }
+
+        setLastScrollTop(currentScrollTop);
+    }
+
 
     /* 캘린더 계산 */
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -32,37 +63,100 @@ const Todo = () => {
     const formatter = new Intl.DateTimeFormat('en-US', { month: 'long' });
 
 
-
-    const getCategoryList = async() => {
-        const res = await api.get("http://localhost:7777/category");
-        setCategoryNames(res?.data);
+    /* 카테고리 관리 컴포넌트*/
+    const CategoryList = () => {
+        return  <div className="CategoryList">
+                    <h1 className="selected-date">카테고리 관리</h1><br />
+                        {categoryList.map((category) => 
+                        <div style={{width:'80%' ,display: "flex", justifyContent:"space-between", paddingLeft: "10px"}} className="category">
+                            {category.categoryName}
+                            <div>
+                                <FontAwesomeIcon icon={faXmark} className="faXmark" style={{color: "#829efb75",}} onClick={() => deleteCategory(category.categoryCode)}/>
+                            </div>
+                        </div>
+                        )}
+                </div>
     }
 
+
+    const getCategoryList = async() => {
+        const res = await api.get("/category");
+        setCategoryList(res?.data);
+    }
+
+    const handleCategoryRegist = async() => {
+        await api.post('/category', newCategory);
+        alert("카테고리를 등록하였습니다.");
+        getCategoryList();
+
+    }
+
+
+    const deleteCategory = async(categoryCode) => {
+
+        if(window.confirm("삭제하시겠습니까?")){
+            const res = await api.delete(`http://localhost:7777/category/${categoryCode}`);
+            getCategoryList();
+            alert(res.data);
+        }
+    }
     
+
+    
+    // 해당 년,월 데이터 가져오기
     const getTaskOfMonth = async() => {
         let calendarDate = currentDate.toISOString().split('T')[0];
         const res = await api.get(`/todo/tasks?calendarDate=${calendarDate}`);
         setTaskOfMonth(res.data);
     }
 
+
+    const [lastPage, setLastPage] = useState(false);
+    // 해당 일 데이터 가져오기
     const getTaskOfDay = async() =>{
+
         const selectedDate = selectedDay.toLocaleDateString('en-CA').split('T')[0];
-        const res = await api.get(`/todo/tasks/day?day=${selectedDate}`);
-        setTaskList(res.data.map(item => ({ ...item, isEditing: false })));
+        // const res = await api.get(`/todo/tasks/day?day=${selectedDate}&page=${page}&size=10`);
+
+        if(!lastPage){
+            const res = await api.get(`/todo/tasks/day?day=${selectedDate}&page=${page}&size=10`);
+            const newItems = res.data.content.map(item => ({ ...item, isEditing: false }))
+            setTaskList(items => [ ...items, ...newItems]);
+            setPage(page => page + 1);
+
+            if(res.data.last){
+                setLastPage(true);
+            }
+        }
+        
+
     }
 
+    useEffect(() => {
+        if(page===0){
+            getTaskOfDay();
+        }
+    }, [page])
 
-    const onChangeRegist = (e) => {
-        const { name, value } = e.target;
-        setnewTask(t => ({
-            ...t,
-            [name]: value
-        }));
-    }
+    useEffect(()=>{
+        
+        setCurrentCategory(0);
+        setPage(0);
+        setLastPage(false);
+        setTaskList([]);
+
+    },[selectedDay])
+
+
+
+    
+    // 스크롤 아래일 때 데이터 로딩
+    
+
 
 
     // 할일 등록
-    const handleRegist = async() => {
+    const handleTaskRegist = async() => {
 
         const form = new FormData();
         form.append('taskCode', newTask.taskCode);
@@ -70,12 +164,14 @@ const Todo = () => {
         form.append('taskStartDate', newTask.taskStartDate);
         form.append('taskEndDate', newTask.taskEndDate);
         form.append('taskState', newTask.taskState);
-        // form.append('taskUserName', newTask.taskUserName);
+        form.append('taskUserName', newTask.taskUserName);
+        form.append('taskCategoryCode', newTask.taskCategoryCode);
 
-        await api.post(`http://localhost:7777/todo/tasks`,form);  //  등록      
+        await api.post(`/todo/tasks`,form);  //  등록      
         alert("할 일이 추가되었습니다.");
-        setTaskLoad(false);
+        setMenu("할 일 보기");
         getTaskOfDay();
+        getTaskOfMonth();
 
     }
 
@@ -90,14 +186,15 @@ const Todo = () => {
 
     const handleEdited = (taskContent,taskCode) => {
         const obj = {
-            taskCode : taskCode,
-            taskContent:taskContent,
+            taskCode: taskCode,
+            taskContent: taskContent,
         }
 
         const form = new FormData();
         form.append("taskCode",taskCode);
         form.append("taskContent",taskContent);
         api.post(`http://localhost:7777/todo/tasks`,form);
+
     }
 
     
@@ -157,7 +254,6 @@ const Todo = () => {
      // 주 별 날짜
      const weeks = getDaysInMonthByWeeks(currentDate);
 
-
      useEffect(() => {
         if(!localStorage.getItem('token')){
             nav('/');
@@ -167,10 +263,6 @@ const Todo = () => {
 
     }, []);
 
-    useEffect(()=>{
-        getTaskOfDay();
-        setCurrentCategory('전체');
-    },[selectedDay])
 
 
     const isEventDay = (date) => {
@@ -181,8 +273,11 @@ const Todo = () => {
             return false;       
         }
     }
-    
 
+
+
+    /* 할 일 등록 컴포넌트 AddTask */
+    
     return <div className="todo-app">
     <div className="calendar-container">
         <div className="calendar">
@@ -211,6 +306,7 @@ const Todo = () => {
                         {week.map((day, dayIndex) => (
                             <div onClick={() => {
                                 setSelectedDay(day);
+                                setMenu("할 일 보기");
                             }} key={dayIndex} className={`day ${day ? '' : 'empty-day'}`}
                                 style={{backgroundColor : day && (day.getDate() === selectedDay.getDate())
                                     && (day.getMonth() === selectedDay.getMonth())
@@ -234,67 +330,68 @@ const Todo = () => {
         </div>
 
     </div>
-
-
-        {/* 오른쪽 UI
-        - header에 카테고리 필터링 드롭다운
-        - 캘린더 날짜를 클릭하면 해당 할 일 리스트 */}
     
         <div className="task-container">
 
-            <header style={{display: "flex", justifyContent:"space-between", marginBottom: "20px"}}>
-                <h1 className="selected-date">{selectedDay.getFullYear()}.{selectedDay.getMonth()+1}.{selectedDay.getDate()}</h1>
-                                <div style={{display: "flex", justifyContent: "flex-end"}}>
-                    <select style={{background: "#4f5b6f", border: "none", borderRadius: "5px"}} onChange={(e) => {setCurrentCategory(e.target.value)}}>
-                        <option value="전체">전체</option>
-                        {categoryNames.map((category) => (
-                            <option value={category.categoryName} key={category.categoryCode}>
-                                {category.categoryName}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-            </header>
-
-
             {/* 할일 리스트 */}
-            {!taskLoad ? 
+            {menu === "할 일 보기" && 
             <>
+                <header style={{display: "flex", justifyContent:"space-between", marginBottom: "20px"}}>
+                    <h1 className="selected-date">{selectedDay.getFullYear()}.{selectedDay.getMonth()+1}.{selectedDay.getDate()}</h1>
+                                    <div style={{display: "flex", justifyContent: "flex-end"}}>
+                        <select style={{background: "#4f5b6f", border: "none", borderRadius: "5px"}} value={currentCategory} onChange={(e) => setCurrentCategory(e.target.value)}>
+                            <option value={0}>전체</option>
+                            {categoryList.map((category) => (
+                                <option key={category.categoryCode} value={category.categoryCode} >
+                                    {category.categoryName}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </header>
 
-                <div className="taskList">
+                <div className="taskList"
+                    ref={boxRef}
+                    onScroll={handleScroll}
+                    style={{
+                        height: "500px",
+                        overflowY: "scroll",
+                    }}
+                >
                 {
                     taskList.length === 0 ? 
                         <div style={{textAlign: "center", }}>할 일이 없습니다.</div>
                             : 
-                        (currentCategory === "전체" ?
+                        (currentCategory == 0 ?
                             taskList.map((task, idx) => 
-                               <TaskList idx={idx} task={task} handleEdit={handleEdit} handleEdited={handleEdited} deleteTask={deleteTask} setCategoryNames={setCategoryNames} setTaskList={setTaskList}/>
+                                <Task idx={idx} task={task} handleEdit={handleEdit} handleEdited={handleEdited} deleteTask={deleteTask} setTaskList={setTaskList}/>
                             )
                             :
-                            taskList.filter((task) => task.taskCategoryName === currentCategory).map((task, idx) => 
-                                <TaskList idx={idx} task={task} handleEdit={handleEdit} handleEdited={handleEdited} deleteTask={deleteTask} setCategoryNames={setCategoryNames} setTaskList={setTaskList}/>
+                            taskList.filter((task) => task.taskCategoryCode == currentCategory).map((task, idx) => 
+                                <Task idx={idx} task={task} handleEdit={handleEdit} handleEdited={handleEdited} deleteTask={deleteTask} setTaskList={setTaskList}/>
 
                             )
                         )
                 }
                 </div>
-            </> 
-            : 
-            <>
-                <div className="AddTask">
-                    <div>할 일 추가</div><br />
-                    <input type="text" name="taskContent" placeholder="내용" onChange={onChangeRegist}/><br /><br />
-                    <input type="date" name="taskStartDate" onChange={onChangeRegist}/><br /><br />
-                    <input type="date" name="taskEndDate" onChange={onChangeRegist}/><br /><br />
-                    <button onClick={handleRegist}>추가하기</button>
-                </div>
             </>}
+            {menu === "할 일 등록" && <AddTask newTask={newTask} setNewTask={setNewTask} handleTaskRegist={handleTaskRegist} categoryList={categoryList}/>}
+            {menu === "카테고리 등록" && <AddCategory newCategory={newCategory} setNewCategory={setNewCategory} handleCategoryRegist={handleCategoryRegist}/>}
+            {menu === "카테고리 관리" && <CategoryList />}
 
 
-            {/* 할 일 추가 버튼 */}
+            {/* 메뉴버튼 */}
             <div style={{display: "flex", justifyContent: "flex-end"}}>
-                <FontAwesomeIcon icon={faCirclePlus} className="faCirclePlus"  onClick={() => setTaskLoad(!taskLoad)} />
+                <FontAwesomeIcon icon={faCirclePlus} className="faCirclePlus"  onClick={() => SetisOpenMenu(!isOpenMenu)} />
             </div>
+            {isOpenMenu && (
+            <div className={`menu`}>
+                <span className='' onClick={() => setMenu("카테고리 등록")}>카테고리 등록</span>
+                <span className='' onClick={() => setMenu("카테고리 관리")}>카테고리 관리</span>
+                <span className='' onClick={() => setMenu("할 일 등록")}>할 일 등록</span>
+                <span className='' onClick={() => setMenu("할 일 보기")}>할 일 보기</span>
+            </div>
+            )}
 
         </div>
     </div>
