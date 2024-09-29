@@ -13,7 +13,7 @@ const Todo = () => {
 
     const nav = useNavigate();
     const [isOpenMenu, SetisOpenMenu] = useState(false);
-    const [page, setPage] = useState(1);
+    const [page, setPage] = useState(0);
     const [categoryList, setCategoryList] = useState([]);
     const [taskList, setTaskList] = useState([]);
     const [currentCategory, setCurrentCategory] = useState(0);
@@ -42,7 +42,6 @@ const Todo = () => {
 
     const handleScroll = () => {
         const box = boxRef.current;
-
         const currentScrollTop = box.scrollTop;
 
         if(currentScrollTop > lastScrollTop){
@@ -116,8 +115,6 @@ const Todo = () => {
     const getTaskOfDay = async() =>{
 
         const selectedDate = selectedDay.toLocaleDateString('en-CA').split('T')[0];
-        // const res = await api.get(`/todo/tasks/day?day=${selectedDate}&page=${page}&size=10`);
-
         if(!lastPage){
             const res = await api.get(`/todo/tasks/day?day=${selectedDate}&page=${page}&size=10`);
             const newItems = res.data.content.map(item => ({ ...item, isEditing: false }))
@@ -147,11 +144,6 @@ const Todo = () => {
 
     },[selectedDay])
 
-
-
-    
-    // 스크롤 아래일 때 데이터 로딩
-    
 
 
 

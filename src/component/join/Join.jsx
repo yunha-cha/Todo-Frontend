@@ -10,6 +10,7 @@ const Join = () => {
     const [id,setId] = useState('');
     const [pw, setPw] = useState('');
     const [pw2, setPw2] = useState('');
+    const [email, setEmail] = useState('');
     const [confirmPwState, setConfirmPwState] = useState(false);
     const [confirmPw, setConfirmPw] = useState(false);
   

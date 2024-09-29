@@ -23,7 +23,7 @@ api.interceptors.response.use(
         if(err.status === 403){
             alert('로그인이 만료되었습니다.');
             localStorage.removeItem('token');
-            window.location.href = 'http://localhost:3000/';
+            // window.location.href = 'http://localhost:3000/';
         } else {
             alert(err.response.data);
             console.log("에러: ",  err.response.data)

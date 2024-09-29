@@ -61,7 +61,14 @@ const Login = () => {
             </div>
             <button onClick={(e)=>login(e)} className="login-button">로그인</button>
             <button onClick={()=>navigate('/join')} className="join-button">회원 가입</button>
+
+            <div style={{display: "flex", justifyContent:"center"}}>
+            <button>아이디 찾기</button>
+            <button onClick={() => navigate('/login/pw')}>비밀번호 찾기</button>
+            </div>
           </div>
+
+          
         </div>
       </section>
   );
